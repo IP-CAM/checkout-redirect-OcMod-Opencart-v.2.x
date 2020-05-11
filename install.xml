@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<modification>
+	<name>Checkout redirect if not logged</name>
+	<link></link>
+	<version>1.0.0</version>
+	<author>Empanada's Team</author>
+	<code>4aab4370-1b49-4ae8-8e8b-9f5cc1288111</code>
+	<file path="catalog/controller/checkout/checkout.php">
+		<operation>
+			<search><![CDATA[
+				public function index() {
+			]]></search>
+			<add position="after"><![CDATA[				
+				if (!$this->customer->isLogged()) {
+					$this->session->data['checkout_redirect'] = true;
+					$this->session->data['redirect'] = $this->url->link('checkout/checkout', '', true);
+
+					$this->response->redirect($this->url->link('account/login', '', true));
+				}
+			]]></add>
+		</operation>
+	</file>
+	<file path="catalog/controller/account/login.php">
+		<operation>
+			<search><![CDATA[
+				if ($this->customer->isLogged()) {
+			]]></search>
+			<add position="after"><![CDATA[				
+				if ($this->session->data['checkout_redirect'] == true) {
+					$this->response->redirect($this->url->link($this->session->data['redirect']));
+				}
+			]]></add>
+		</operation>
+	</file>	
+	<file path="catalog/controller/checkout/cart.php">
+		<operation>
+		<search><![CDATA[
+				$this->load->model('catalog/product');
+			]]></search>
+			<add position="after"><![CDATA[				
+				if(isset($this->request->post['checkout_redirect'])){
+					$this->session->data['checkout_redirect'] = true;
+				}
+			]]></add>
+		</operation>
+	</file>
+</modification>
